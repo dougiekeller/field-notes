@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Field Notes"/>
+<meta name="theme-color" content="#2E4D3E"/>
+<title>Field Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:#F3EDE2;font-family:'IBM Plex Sans',sans-serif;color:#1C2D24}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+html{-webkit-text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+input,select,button,textarea{font-family:inherit}
+button{cursor:pointer}
+#app{max-width:900px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.header{background:#2E4D3E;color:#FEFCF7;padding:16px 20px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:-0.3px}
+.header-sub{font-size:12px;color:rgba(254,252,247,0.6);margin-top:2px;font-weight:300;letter-spacing:0.5px}
+.header-net{text-align:right}
+.header-net-val{font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700}
+.header-net-label{font-size:10px;color:rgba(254,252,247,0.5);letter-spacing:0.6px}
+.nav{background:#1C2D24;display:flex;position:sticky;top:0;z-index:100;flex-shrink:0}
+.nav-btn{flex:1;padding:12px 4px;border:none;background:transparent;color:rgba(254,252,247,0.5);font-size:10px;font-weight:400;letter-spacing:0.4px;text-transform:uppercase;transition:all 0.15s;border-bottom:2px solid transparent}
+.nav-btn.active{background:#2E4D3E;color:#FEFCF7;font-weight:600;border-bottom:2px solid #BF7835}
+.content{padding:16px 16px 80px;flex:1;overflow-y:auto}
+.card{background:#FEFCF7;border-radius:10px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.07);border:1px solid #DDD8CC}
+.card-title{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:700;color:#1C2D24;margin-bottom:12px;letter-spacing:-0.2px}
+.label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#8A9B8A;margin-bottom:6px;display:block}
+input,select{width:100%;padding:9px 12px;border:1px solid #DDD8CC;border-radius:8px;font-size:14px;background:#FEFCF7;color:#1C2D24;outline:none}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;background:#2E4D3E;color:#FEFCF7;transition:opacity 0.15s}
+.btn:disabled{opacity:0.4}
+.btn-ghost{background:transparent;border:1px solid #DDD8CC;color:#8A9B8A}
+.btn-danger{background:#A83232;color:#FEFCF7}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-accent{background:#BF7835;color:#FEFCF7}
+.tag{font-size:12px;padding:3px 10px;border-radius:20px;background:#F3EDE2;border:1px solid #DDD8CC;color:#4A5E4A;display:inline-block;margin:3px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.flex{display:flex;gap:8px}
+.step-num{background:#2E4D3E;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;line-height:20px;text-align:center}
+.toggle{width:44px;height:24px;border-radius:12px;background:#DDD8CC;position:relative;transition:background 0.2s;border:none;flex-shrink:0}
+.toggle.on{background:#BF7835}
+.toggle-knob{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.toggle.on .toggle-knob{left:23px}
+.date-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none}
+.date-strip::-webkit-scrollbar{display:none}
+.date-btn{flex-shrink:0;padding:6px 10px;border-radius:8px;border:1px solid #DDD8CC;background:#FEFCF7;color:#4A5E4A;font-size:11px;cursor:pointer}
+.date-btn.active{background:#2E4D3E;border-color:#2E4D3E;color:#fff;font-weight:600}
+.date-btn.today{color:#BF7835;font-weight:600}
+.chip{padding:7px 14px;border-radius:20px;border:1px solid #DDD8CC;background:#FEFCF7;color:#4A5E4A;font-size:13px;cursor:pointer;white-space:nowrap}
+.chip.active{background:#2E4D3E;color:#fff;border-color:#2E4D3E;font-weight:600}
+.plan-card{min-height:220px;touch-action:pan-y}
+.fasting-open{background:rgba(60,122,85,0.12);border:1px solid #3C7A55;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#3C7A55;font-weight:600}
+.fasting-closed{background:rgba(191,120,53,0.1);border:1px solid #BF7835;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#BF7835;font-weight:600}
+.section-header{font-size:11px;font-weight:700;letter-spacing:0.6px;color:#2E4D3E;width:100%;margin-top:8px;margin-bottom:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="header-title">Field Notes</div>
+      <div class="header-sub">Your daily health log</div>
+    </div>
+    <div class="header-net">
+      <div class="header-net-val" id="hdr-net">—</div>
+      <div class="header-net-label" id="hdr-target">NET CAL</div>
+    </div>
+  </div>
+  <div class="nav" id="nav"></div>
+  <div class="content" id="content"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const FOODS = [
+  // ── BREAKFAST ─────────────────────────────────────────────────────────────
+  { n: "Oatmeal (1 cup cooked)", c: 150, p: 5, v: true, cat: "breakfast" },
+  { n: "Overnight oats with berries", c: 310, p: 11, v: true, cat: "breakfast" },
+  { n: "Smoothie (fruit + oat milk)", c: 200, p: 5, v: true, cat: "breakfast" },
+  { n: "Avocado toast (2 slices)", c: 290, p: 8, v: true, cat: "breakfast" },
+  { n: "Chia pudding", c: 200, p: 7, v: true, cat: "breakfast" },
+  { n: "Savory oatmeal (nutritional yeast)", c: 300, p: 12, v: true, cat: "breakfast" },
+  // ── SNACKS ────────────────────────────────────────────────────────────────
+  { n: "Banana", c: 105, p: 1, v: true, cat: "snack" },
+  { n: "Apple", c: 95, p: 0, v: true, cat: "snack" },
+  { n: "Mixed nuts (1 oz)", c: 170, p: 5, v: true, cat: "snack" },
+  { n: "Hummus (1/4 cup)", c: 100, p: 5, v: true, cat: "snack" },
+  { n: "Edamame (1 cup shelled)", c: 190, p: 18, v: true, cat: "snack" },
+  { n: "Apple + peanut butter", c: 285, p: 7, v: true, cat: "snack" },
+  { n: "Rice cakes + almond butter (2)", c: 210, p: 5, v: true, cat: "snack" },
+  { n: "Roasted chickpeas (1/2 cup)", c: 180, p: 8, v: true, cat: "snack" },
+  { n: "Trail mix (portioned)", c: 200, p: 5, v: true, cat: "snack" },
+  { n: "Hemp seed yogurt bowl", c: 220, p: 22, v: false, cat: "snack" },
+  { n: "Cottage cheese (1/2 cup) + fruit", c: 180, p: 16, v: false, cat: "snack" },
+  { n: "Hard boiled eggs (2)", c: 140, p: 12, v: false, cat: "snack" },
+  { n: "Tuna on rice cakes", c: 170, p: 22, v: false, cat: "snack" },
+  { n: "Smoked salmon + cucumber", c: 130, p: 16, v: false, cat: "snack" },
+  { n: "Pumpkin seeds (1/4 cup)", c: 160, p: 9, v: true, cat: "snack" },
+  // ── DRINKS ────────────────────────────────────────────────────────────────
+  { n: "Coffee with oat milk", c: 50, p: 1, v: true, cat: "drink" },
+  { n: "Water / sparkling water", c: 0, p: 0, v: true, cat: "drink" },
+  { n: "Herbal tea", c: 5, p: 0, v: true, cat: "drink" },
+  { n: "Beer (12 oz, standard)", c: 150, p: 1, v: true, cat: "drink" },
+  { n: "Beer (12 oz, light)", c: 110, p: 1, v: true, cat: "drink" },
+  { n: "Wine (5 oz glass)", c: 125, p: 0, v: true, cat: "drink" },
+  { n: "Negroni / Boulevardier", c: 185, p: 0, v: true, cat: "drink" },
+  { n: "Cocktail (simple, spirits)", c: 130, p: 0, v: true, cat: "drink" },
+  // ── VEGAN PROTEINS ────────────────────────────────────────────────────────
+  { n: "Tofu, firm (4 oz)", c: 90, p: 10, v: true, cat: "protein" },
+  { n: "Tofu, firm (6 oz)", c: 135, p: 15, v: true, cat: "protein" },
+  { n: "Tempeh (4 oz)", c: 160, p: 17, v: true, cat: "protein" },
+  { n: "Tempeh (6 oz)", c: 240, p: 25, v: true, cat: "protein" },
+  { n: "Lentils, cooked (1 cup)", c: 230, p: 18, v: true, cat: "protein" },
+  { n: "Lentils, cooked (1/2 cup)", c: 115, p: 9, v: true, cat: "protein" },
+  { n: "Chickpeas (1 cup)", c: 270, p: 15, v: true, cat: "protein" },
+  { n: "Chickpeas (1/2 cup)", c: 135, p: 7, v: true, cat: "protein" },
+  { n: "Black beans (1 cup)", c: 230, p: 15, v: true, cat: "protein" },
+  { n: "Black beans (1/2 cup)", c: 115, p: 7, v: true, cat: "protein" },
+  { n: "White beans (1 cup)", c: 250, p: 17, v: true, cat: "protein" },
+  { n: "Edamame (1 cup shelled, meal)", c: 190, p: 18, v: true, cat: "protein" },
+  { n: "Hemp seeds (3 tbsp)", c: 170, p: 10, v: true, cat: "protein" },
+  { n: "Nutritional yeast (2 tbsp)", c: 45, p: 8, v: true, cat: "protein" },
+  { n: "Peanut butter (2 tbsp)", c: 190, p: 8, v: true, cat: "fat" },
+  { n: "Almond butter (2 tbsp)", c: 200, p: 7, v: true, cat: "fat" },
+  // ── EGGS & DAIRY ──────────────────────────────────────────────────────────
+  { n: "Egg (1 whole)", c: 70, p: 6, v: false, cat: "protein" },
+  { n: "Eggs (2, any style)", c: 140, p: 12, v: false, cat: "protein" },
+  { n: "Eggs (2, scrambled)", c: 180, p: 12, v: false, cat: "protein" },
+  { n: "Veggie omelette (3 eggs)", c: 250, p: 18, v: false, cat: "breakfast" },
+  { n: "Greek yogurt (1 cup, full-fat)", c: 220, p: 20, v: false, cat: "protein" },
+  { n: "Greek yogurt (1/2 cup)", c: 110, p: 10, v: false, cat: "snack" },
+  { n: "Cottage cheese (1 cup)", c: 210, p: 25, v: false, cat: "protein" },
+  { n: "Cottage cheese (1/2 cup)", c: 105, p: 12, v: false, cat: "snack" },
+  // ── FISH & SEAFOOD ────────────────────────────────────────────────────────
+  { n: "Salmon (4 oz grilled)", c: 234, p: 32, v: false, cat: "protein" },
+  { n: "Salmon (6 oz grilled)", c: 350, p: 48, v: false, cat: "protein" },
+  { n: "Salmon + roasted veg", c: 430, p: 38, v: false, cat: "main" },
+  { n: "Canned salmon (1/2 can)", c: 110, p: 16, v: false, cat: "protein" },
+  { n: "Canned salmon (full can)", c: 220, p: 32, v: false, cat: "protein" },
+  { n: "Smoked salmon (3 oz)", c: 100, p: 16, v: false, cat: "protein" },
+  { n: "Sardines (1 can)", c: 190, p: 23, v: false, cat: "protein" },
+  { n: "Shrimp (4 oz)", c: 112, p: 24, v: false, cat: "protein" },
+  { n: "Shrimp (6 oz)", c: 168, p: 36, v: false, cat: "protein" },
+  { n: "Tuna (1/2 can, water)", c: 100, p: 22, v: false, cat: "protein" },
+  { n: "Tuna (full can, water)", c: 200, p: 44, v: false, cat: "protein" },
+  { n: "Cod fillet (5 oz)", c: 130, p: 28, v: false, cat: "protein" },
+  // ── MEAT & POULTRY (occasional) ───────────────────────────────────────────
+  { n: "Chicken breast (5 oz grilled)", c: 230, p: 43, v: false, cat: "protein" },
+  { n: "Chicken breast (3 oz)", c: 140, p: 26, v: false, cat: "protein" },
+  { n: "Ground turkey (4 oz cooked)", c: 170, p: 30, v: false, cat: "protein" },
+  { n: "Burger, beef or bison (4 oz patty)", c: 280, p: 28, v: false, cat: "protein" },
+  { n: "Rotisserie chicken (3 oz, no skin)", c: 145, p: 27, v: false, cat: "protein" },
+  // ── GRAINS / CARBS ────────────────────────────────────────────────────────
+  { n: "Brown rice (1 cup cooked)", c: 220, p: 5, v: true, cat: "carb" },
+  { n: "White rice (1 cup cooked)", c: 200, p: 4, v: true, cat: "carb" },
+  { n: "Quinoa (1 cup cooked)", c: 220, p: 8, v: true, cat: "carb" },
+  { n: "Farro (1 cup cooked)", c: 250, p: 10, v: true, cat: "carb" },
+  { n: "Whole grain pasta (2 oz dry)", c: 200, p: 8, v: true, cat: "carb" },
+  { n: "Oat milk (1 cup)", c: 120, p: 3, v: true, cat: "carb" },
+  { n: "Whole grain bread (1 slice)", c: 80, p: 4, v: true, cat: "carb" },
+  { n: "Corn tortilla (2)", c: 100, p: 3, v: true, cat: "carb" },
+  { n: "Sweet potato (medium, baked)", c: 130, p: 3, v: true, cat: "carb" },
+  // ── VEGETABLES ────────────────────────────────────────────────────────────
+  { n: "Mixed greens (2 cups)", c: 15, p: 1, v: true, cat: "veg" },
+  { n: "Spinach (2 cups raw)", c: 14, p: 2, v: true, cat: "veg" },
+  { n: "Broccoli (1 cup)", c: 55, p: 4, v: true, cat: "veg" },
+  { n: "Roasted vegetables (1 cup)", c: 90, p: 3, v: true, cat: "veg" },
+  { n: "Avocado (1/2)", c: 120, p: 1, v: true, cat: "fat" },
+  { n: "Cherry tomatoes (1 cup)", c: 30, p: 1, v: true, cat: "veg" },
+  // ── MAINS ─────────────────────────────────────────────────────────────────
+  { n: "Chickpea curry + rice", c: 480, p: 16, v: true, cat: "main" },
+  { n: "Lentil dal + rice", c: 420, p: 18, v: true, cat: "main" },
+  { n: "Black bean tacos (2)", c: 380, p: 14, v: true, cat: "main" },
+  { n: "Tofu stir fry + rice", c: 400, p: 18, v: true, cat: "main" },
+  { n: "Shakshuka (2 eggs)", c: 290, p: 16, v: false, cat: "main" },
+  { n: "Shrimp tacos (2)", c: 380, p: 34, v: false, cat: "main" },
+  { n: "Tuna pasta", c: 440, p: 44, v: false, cat: "main" },
+  { n: "Chicken + grain bowl", c: 450, p: 44, v: false, cat: "main" },
+];
+
+const PROTEIN_TARGET = 150;
+
+const EXERCISES = [
+  { n: "Walk (20 min)", c: 130, t: "walk" },
+  { n: "Walk (30 min)", c: 195, t: "walk" },
+  { n: "Walk (45 min)", c: 290, t: "walk" },
+  { n: "Walk (60 min)", c: 390, t: "walk" },
+  { n: "Bike ride (30 min)", c: 450, t: "bike" },
+  { n: "Bike ride (45 min)", c: 675, t: "bike" },
+  { n: "Bike ride (60 min)", c: 900, t: "bike" },
+  { n: "Swim (30 min)", c: 390, t: "swim" },
+  { n: "Swim (45 min)", c: 585, t: "swim" },
+  { n: "Basketball (20 min)", c: 300, t: "basketball" },
+  { n: "Basketball (30 min)", c: 450, t: "basketball" },
+  { n: "Basketball (60 min)", c: 900, t: "basketball" },
+  { n: "Peloton (20 min)", c: 320, t: "peloton" },
+  { n: "Peloton (30 min)", c: 475, t: "peloton" },
+  { n: "Peloton (45 min)", c: 720, t: "peloton" },
+  { n: "Kettlebell (20 min)", c: 300, t: "kettlebell" },
+  { n: "Kettlebell (30 min)", c: 450, t: "kettlebell" },
+  { n: "Gym session (30 min)", c: 280, t: "gym" },
+  { n: "Gym session (45 min)", c: 420, t: "gym" },
+  { n: "Weight training (20 min)", c: 185, t: "weights" },
+  { n: "Weight training (30 min)", c: 280, t: "weights" },
+  { n: "Weight training (45 min)", c: 420, t: "weights" },
+  { n: "Yoga / stretch (20 min)", c: 90, t: "yoga" },
+];
+
+const PLAN_CARDS = [
+  { num:"01", category:"The Approach", title:"Yield 40%, keep 70%",
+    body:"Weight loss that sticks is a background process, not a foreground project. You're not trying to dominate it — you're creating conditions where it happens naturally. That means sustainable deficit, enjoyable movement, and enough flexibility to absorb a bad week without losing the thread. Slow burn beats bright flame every time." },
+  { num:"02", category:"Hunger", title:"Volume + protein, every meal",
+    body:"Hunger at this stage isn't a character flaw — it's a signal to manage. The two levers: volume (big meals with lots of low-cal food) and protein (the most satiating macro). A meal with 30g+ protein and a big pile of vegetables will hold you 4-5 hours. A small high-calorie meal won't. Aim for both at every meal, not just dinner." },
+  { num:"03", category:"Injury", title:"Start lighter than you think",
+    body:"At 250 lbs, connective tissue — tendons, ligaments, fascia — is under more load than your cardiovascular system. It also adapts more slowly. Your lungs will recover in days; your knees in weeks. Start lighter, progress slower, stop before you feel it. The injury that keeps you off movement for 3 weeks is the worst thing that can happen to this plan." },
+  { num:"04", category:"IBS", title:"Fiber is medicine. Dose carefully.",
+    body:"High-fiber foods are your best friends for volume and satiety — but they need to be introduced gradually. High-risk: garlic, onions (cook with garlic-infused oil instead), kidney beans, cauliflower, apples. Lower-risk: rinsed canned chickpeas, firm tofu, oats, rice, cooked spinach. When in doubt, rinse the beans and cook the vegetables." },
+  { num:"05", category:"The Kitchen", title:"Sunday changes everything",
+    body:"Remote work removed the natural structure that regulated eating. Sunday batch cook recreates it. 60 minutes Sunday: one grain, one legume, sheet pan roasted veg, 6 hard boiled eggs, 3 overnight oat jars. You've just covered 70% of your meals for the week. Without that infrastructure, every meal becomes a decision made by a tired, hungry person — and that person makes bad choices." },
+  { num:"06", category:"Disruption", title:"Hold weeks are part of the plan",
+    body:"Travel, sick kids, playoff basketball, a weekend in Denver — these weeks exist. The Hold mode (2,400 cal, no deficit pressure) is not failure, it's architecture. Anchors for a disrupted week: morning walk whenever possible, control breakfast even when dinner is chaos, drink water aggressively. The goal is to exit the disruption close to where you entered." },
+  { num:"07", category:"Exercise", title:"Ranked by sustainability",
+    body:"Walk (best — zero barrier, cumulative, therapeutic). Bike or swim (excellent — joint-friendly, high burn, enjoyable). Peloton (good — gamified, structured, no weather). Kettlebell or gym weights (good — muscle preservation, metabolic). Basketball (high-burn but weather/court dependent). The best exercise is the one you'll actually do on a Thursday evening when you're tired." },
+  { num:"08", category:"The Long Game", title:"Consistent beats intense",
+    body:"The version of this that works isn't the most aggressive one — it's the most consistent one. A modest daily deficit, maintained for months, beats a severe one that collapses after three weeks. Pick a calorie target you can hit 5 out of 7 days without misery. Pick exercise you'd choose even if it didn't burn calories. Build in tolerance for imperfect weeks. The math is slow and it works." },
+  { num:"09", category:"Daily Rhythm", title:"16:8 for a remote schedule",
+    body:"Eating window 10am–6pm. Remote work means no commute to suppress morning appetite — the window opens at 10am to give you structure. First meal: substantial, protein-rich (Greek yogurt + hemp seeds, smoked salmon toast, tofu scramble). Biggest meal at lunch when you're most insulin-sensitive. Snack at 3pm to prevent 5pm desperation. Final meal by 6pm sharp. Nothing after." },
+  { num:"10", category:"Sunday Setup", title:"The 60-minute investment",
+    body:"Sunday batch cook checklist: cook one grain (rice or quinoa, 20 min hands-off), simmer one legume (lentil dal or black bean soup covers 3 lunches), roast one sheet pan of mixed veg (425°F, 22 min), hard-boil 6 eggs, prep 3 overnight oat jars, portion 4 snack containers (Greek yogurt + hemp seeds or cottage cheese). Total: 60 minutes. Payoff: 70% of your meals, zero decisions on tired weeknights." },
+];
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+
+const SK = "doug-health-v2";
+const T = {
+  bg:"#F3EDE2", card:"#FEFCF7", dark:"#1C2D24", green:"#2E4D3E",
+  accent:"#BF7835", muted:"#8A9B8A", border:"#DDD8CC",
+  danger:"#A83232", good:"#3C7A55", text:"#1C2D24", textMid:"#4A5E4A"
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+
+const BLANK_DAY = () => ({ weight:null, drankLastNight:false, foods:[], exercises:[], steps:0 });
+const TODAY = () => new Date().toISOString().split("T")[0];
+
+let state = { settings:{ mode:"push", startWeight:250, goalWeight:185, monthGoalWeight:240 }, days:{} };
+try { const raw = localStorage.getItem(SK); if(raw) state = JSON.parse(raw); } catch(e){}
+
+function save() { try { localStorage.setItem(SK, JSON.stringify(state)); } catch(e){} }
+
+function getDay(date) { return state.days[date] || BLANK_DAY(); }
+
+function updateDay(date, fn) {
+  if (!state.days[date]) state.days[date] = BLANK_DAY();
+  fn(state.days[date]);
+  save();
+  render();
+}
+
+function updateSettings(fn) { fn(state.settings); save(); render(); }
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+
+function calTarget(drunk) {
+  const m = state.settings.mode || "push";
+  if (m === "hold") return 2400;
+  if (m === "push") return drunk ? 2000 : 1800;
+  return drunk ? 2300 : 2100;
+}
+
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) {
+    for (const [k,v] of Object.entries(attrs)) {
+      if (k === "class") e.className = v;
+      else if (k === "style" && typeof v === "object") Object.assign(e.style, v);
+      else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2).toLowerCase(), v);
+      else if (k === "html") e.innerHTML = v;
+      else e.setAttribute(k, v);
+    }
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    e.appendChild(typeof c === "string" || typeof c === "number" ? document.createTextNode(String(c)) : c);
+  }
+  return e;
+}
+
+function div(attrs, ...children) { return el("div", attrs, ...children); }
+function span(attrs, ...children) { return el("span", attrs, ...children); }
+function btn(attrs, ...children) { return el("button", attrs, ...children); }
+function inp(attrs) { return el("input", attrs); }
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+
+let activeTab = "today";
+let activeDate = TODAY();
+
+const TABS = [
+  { id:"today", label:"Today" },
+  { id:"log", label:"Log" },
+  { id:"suggest", label:"Suggest" },
+  { id:"progress", label:"Progress" },
+  { id:"plan", label:"Plan" },
+];
+
+// ── TODAY VIEW ─────────────────────────────────────────────────────────────
+
+function renderToday() {
+  const day = getDay(activeDate);
+  const consumed = day.foods.reduce((s,f)=>s+f.c,0);
+  const burned = day.exercises.reduce((s,e)=>s+e.c,0);
+  const net = consumed - burned;
+  const target = calTarget(day.drankLastNight);
+  const protein = day.foods.reduce((s,f)=>s+(f.p||0),0);
+
+  // Fasting window
+  const now = new Date();
+  const h = now.getHours() + now.getMinutes()/60;
+  const isActiveDate = activeDate === TODAY();
+  const windowOpen = h >= 10 && h < 18;
+  const minsToOpen = !windowOpen && h < 10 ? Math.round((10-h)*60) : null;
+  const minsToClose = windowOpen ? Math.round((18-h)*60) : null;
+
+  let fastEl = null;
+  if (isActiveDate) {
+    const msg = windowOpen
+      ? `Eating window open — closes in ${minsToClose}m (6:00 PM)`
+      : h >= 18 ? "Window closed for the night. Fast until 10 AM."
+      : `Fasting — window opens in ${minsToOpen}m (10:00 AM)`;
+    fastEl = div({ class: windowOpen ? "fasting-open" : "fasting-closed" }, msg);
+  }
+
+  // Date strip
+  const dates = [];
+  const d = new Date();
+  for (let i=0;i<14;i++) {
+    dates.push(d.toISOString().split("T")[0]);
+    d.setDate(d.getDate()-1);
+  }
+  const dateStrip = div({ class:"date-strip" }, ...dates.map(dt => {
+    const isAct = dt === activeDate;
+    const isTod = dt === TODAY();
+    const b = btn({
+      class: "date-btn" + (isAct?" active":"") + (!isAct&&isTod?" today":""),
+      onClick: () => { activeDate = dt; render(); }
+    }, isTod ? "Today" : new Date(dt+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric"}));
+    return b;
+  }));
+
+  // Cal bar
+  const pct = Math.min(100, Math.round((net/target)*100));
+  const over = net > target;
+  const col = over ? T.danger : pct > 85 ? T.accent : T.good;
+  const protPct = Math.min(100, Math.round((protein/PROTEIN_TARGET)*100));
+  const protOk = protein >= PROTEIN_TARGET;
+  const protClose = protein >= PROTEIN_TARGET*0.75;
+  const protCol = protOk ? T.good : protClose ? T.accent : T.danger;
+
+  const calBar = div({},
+    div({ style:{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }},
+      span({}, el("b",{style:{fontSize:"22px",color:col}},net), span({style:{fontSize:"13px",color:T.muted}},` / ${target} net cal`)),
+      span({style:{fontSize:"13px",color:T.good}},`−${burned} burned`)
+    ),
+    div({style:{height:"10px",borderRadius:"5px",background:T.border,overflow:"hidden",marginBottom:"4px"}},
+      div({style:{height:"100%",borderRadius:"5px",background:col,width:pct+"%",transition:"width 0.4s"}})
+    ),
+    div({style:{display:"flex",justifyContent:"space-between",marginBottom:"14px"}},
+      span({style:{fontSize:"11px",color:T.muted}},`Eaten: ${consumed}`),
+      span({style:{fontSize:"11px",fontWeight:"600",color:over?T.danger:T.good}},
+        over ? `${net-target} over` : `${target-net} remaining`)
+    ),
+    div({style:{display:"flex",justifyContent:"space-between",marginBottom:"5px"}},
+      span({style:{fontSize:"12px",color:T.textMid,fontWeight:"500"}},"Protein"),
+      span({style:{fontSize:"12px",fontWeight:"600",color:protCol}},`${protein}g`,
+        span({style:{fontWeight:"400",color:T.muted}},` / ${PROTEIN_TARGET}g target`))
+    ),
+    div({style:{height:"8px",borderRadius:"4px",background:T.border,overflow:"hidden"}},
+      div({style:{height:"100%",borderRadius:"4px",background:protCol,width:protPct+"%",transition:"width 0.4s"}})
+    ),
+    div({style:{marginTop:"4px",fontSize:"11px",color:protCol,fontWeight:protOk?"600":"400"}},
+      protOk ? "✓ Protein target hit" : `${PROTEIN_TARGET-protein}g to go — aim for protein at every meal`)
+  );
+
+  // Check-in card
+  const weightInput = inp({ type:"number", value:day.weight||"", placeholder:"lbs",
+    style:{width:"100%",padding:"9px 12px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"14px",background:T.card,color:T.text,outline:"none"},
+    onInput: e => updateDay(activeDate, d2 => { d2.weight = parseFloat(e.target.value)||null; })
+  });
+  const toggleBtn = btn({
+    class:"toggle"+(day.drankLastNight?" on":""),
+    onClick: () => updateDay(activeDate, d2 => { d2.drankLastNight = !d2.drankLastNight; })
+  }, div({class:"toggle-knob"}));
+
+  const checkin = div({ class:"card" },
+    div({ class:"card-title" }, "Morning Check-in"),
+    el("label",{class:"label"},"Weight today (lbs)"),
+    weightInput,
+    div({style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"14px"}},
+      div({},
+        div({style:{fontSize:"14px",fontWeight:"500"}},"Drank last night?"),
+        div({style:{fontSize:"12px",color:T.muted,marginTop:"2px"}},
+          day.drankLastNight ? `+${calTarget(true)-calTarget(false)} cal target today` : "No adjustment")
+      ),
+      toggleBtn
+    )
+  );
+
+  // Goal progress
+  const s = state.settings;
+  const cw = day.weight || s.startWeight;
+  const totalLoss = s.startWeight - s.goalWeight;
+  const achieved = s.startWeight - cw;
+  const pctDone = totalLoss > 0 ? Math.min(100,Math.round((achieved/totalLoss)*100)) : 0;
+  const goalCard = div({class:"card"},
+    div({class:"card-title"},"Goal Progress"),
+    div({style:{display:"flex",justifyContent:"space-between",fontSize:"12px",color:T.muted,marginBottom:"6px"}},
+      span({},"Start: "+s.startWeight),
+      span({style:{color:T.accent,fontWeight:"600"}},"Month: "+s.monthGoalWeight),
+      span({},"Goal: "+s.goalWeight)
+    ),
+    div({style:{height:"10px",borderRadius:"5px",background:T.border,overflow:"hidden",marginBottom:"6px"}},
+      div({style:{height:"100%",borderRadius:"5px",background:T.good,width:pctDone+"%",transition:"width 0.4s"}})
+    ),
+    div({style:{textAlign:"center",fontSize:"13px",color:T.textMid}},
+      el("b",{},cw+" lbs"), ` — ${achieved > 0 ? achieved+" lbs lost" : "starting weight"} (${pctDone}% to goal)`)
+  );
+
+  // Food log
+  const foodRows = day.foods.map((f,i) =>
+    div({style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",
+      borderBottom:i<day.foods.length-1?`1px solid ${T.border}`:"none"}},
+      span({style:{fontSize:"13px"}},f.v?"🌱":f.p>20?"🐟":"🥚"," ",f.n),
+      div({style:{display:"flex",alignItems:"center",gap:"10px"}},
+        div({style:{textAlign:"right"}},
+          div({style:{fontSize:"13px",fontWeight:"600",color:T.accent}},f.c+" cal"),
+          div({style:{fontSize:"11px",color:T.good}},(f.p||0)+"g pro")
+        ),
+        btn({style:{background:"none",border:"none",color:T.muted,fontSize:"18px",padding:"0 4px",cursor:"pointer"},
+          onClick:()=>updateDay(activeDate,d2=>{d2.foods.splice(i,1);})},"×")
+      )
+    )
+  );
+
+  const exerciseRows = day.exercises.map((ex,i) =>
+    div({style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",
+      borderBottom:i<day.exercises.length-1?`1px solid ${T.border}`:"none"}},
+      span({style:{fontSize:"13px"}},ex.n),
+      div({style:{display:"flex",alignItems:"center",gap:"10px"}},
+        span({style:{fontSize:"13px",fontWeight:"600",color:T.good}},`−${ex.c} cal`),
+        btn({style:{background:"none",border:"none",color:T.muted,fontSize:"18px",padding:"0 4px",cursor:"pointer"},
+          onClick:()=>updateDay(activeDate,d2=>{d2.exercises.splice(i,1);})},"×")
+      )
+    )
+  );
+
+  const logCard = div({class:"card"},
+    div({class:"card-title"},"Today's Log"),
+    day.foods.length ? div({},...foodRows) : div({style:{fontSize:"13px",color:T.muted,padding:"8px 0"}},"No food logged yet — use the Log tab"),
+    day.exercises.length ? div({style:{marginTop:"10px"}},
+      div({style:{fontSize:"11px",fontWeight:"700",letterSpacing:"0.8px",textTransform:"uppercase",color:T.accent,marginBottom:"8px"}},"Exercise"),
+      ...exerciseRows
+    ) : null
+  );
+
+  // Mode selector
+  const modeCard = div({class:"card"},
+    div({class:"card-title"},"Mode"),
+    div({style:{display:"flex",gap:"8px"}},
+      ...["push","steady","hold"].map(m =>
+        btn({
+          style:{flex:"1",padding:"10px",borderRadius:"8px",border:`1px solid ${state.settings.mode===m?T.green:T.border}`,
+            background:state.settings.mode===m?T.green+"18":T.card,
+            color:state.settings.mode===m?T.green:T.textMid,
+            fontWeight:state.settings.mode===m?"600":"400",
+            fontSize:"13px"},
+          onClick:()=>updateSettings(s2=>{s2.mode=m;})
+        }, m==="push"?"🔥 Push":"steady"===m?"🌊 Steady":"🧳 Hold",
+        div({style:{fontSize:"10px",color:state.settings.mode===m?T.green:T.muted,marginTop:"2px"}},
+          m==="push"?`${calTarget(false)} cal`:m==="steady"?`${calTarget(false)} cal`:`${calTarget(false)} cal`)
+      ))
+    )
+  );
+
+  return div({}, dateStrip, fastEl||"", div({class:"card"},calBar), checkin, goalCard, logCard, modeCard);
+}
+
+// ── LOG VIEW ────────────────────────────────────────────────────────────────
+
+let logSearch = "";
+let logFilter = "all";
+
+function renderLog() {
+  const day = getDay(activeDate);
+
+  // Date selector
+  const dates = [];
+  const d = new Date();
+  for (let i=0;i<14;i++) { dates.push(d.toISOString().split("T")[0]); d.setDate(d.getDate()-1); }
+  const dateStrip = div({class:"date-strip"}, ...dates.map(dt => {
+    const isAct = dt === activeDate;
+    const isTod = dt === TODAY();
+    return btn({
+      class:"date-btn"+(isAct?" active":"")+((!isAct&&isTod)?" today":""),
+      onClick:()=>{ activeDate=dt; render(); }
+    }, isTod?"Today":new Date(dt+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric"}));
+  }));
+
+  // Food search
+  const searchInput = inp({
+    type:"text", value:logSearch, placeholder:"Search foods…",
+    style:{width:"100%",padding:"9px 12px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"14px",background:T.card,color:T.text,outline:"none",marginBottom:"10px"},
+    onInput: e => { logSearch = e.target.value; renderContent(); }
+  });
+
+  const filters = div({style:{display:"flex",gap:"6px",marginBottom:"10px",flexWrap:"wrap"}},
+    ...["all","🌱 Vegan","🥩 Protein","🍺 Drinks"].map((f,i) => {
+      const fid = ["all","vegan","protein","drink"][i];
+      return btn({
+        class:"chip"+(logFilter===fid?" active":""),
+        onClick:()=>{ logFilter=fid; renderContent(); }
+      },f);
+    })
+  );
+
+  const filtered = FOODS.filter(f => {
+    if (logSearch && !f.n.toLowerCase().includes(logSearch.toLowerCase())) return false;
+    if (logFilter==="vegan") return f.v;
+    if (logFilter==="protein") return !f.v && f.cat!=="drink" && f.cat!=="carb" && f.cat!=="fat";
+    if (logFilter==="drink") return f.cat==="drink";
+    return true;
+  }).slice(0,40);
+
+  const foodList = div({style:{maxHeight:"300px",overflowY:"auto",border:`1px solid ${T.border}`,borderRadius:"8px",background:T.card}},
+    ...filtered.map((f,i) =>
+      div({style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 12px",
+        borderBottom:i<filtered.length-1?`1px solid ${T.border}`:"none",cursor:"pointer"}},
+        div({},
+          div({style:{fontSize:"13px",fontWeight:"500"}},(f.v?"🌱":f.cat==="drink"?"🍺":f.p>20?"🐟":"🥚")+" "+f.n),
+          div({style:{fontSize:"11px",color:T.muted}},f.c+" cal · "+f.p+"g protein")
+        ),
+        btn({
+          style:{background:T.green,color:"#fff",border:"none",borderRadius:"6px",padding:"4px 10px",fontSize:"12px",fontWeight:"600",cursor:"pointer"},
+          onClick:()=>updateDay(activeDate,d2=>{d2.foods.push({...f});})
+        },"Add")
+      )
+    )
+  );
+
+  // Custom food entry
+  let cf = {n:"",c:"",p:""};
+  const cfName = inp({type:"text",placeholder:"Food name",
+    style:{flex:"2",padding:"9px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"13px",background:T.card,color:T.text,outline:"none"},
+    onInput:e=>cf.n=e.target.value});
+  const cfCal = inp({type:"number",placeholder:"Cal",
+    style:{flex:"1",padding:"9px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"13px",background:T.card,color:T.text,outline:"none"},
+    onInput:e=>cf.c=e.target.value});
+  const cfPro = inp({type:"number",placeholder:"Pro(g)",
+    style:{flex:"1",padding:"9px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"13px",background:T.card,color:T.text,outline:"none"},
+    onInput:e=>cf.p=e.target.value});
+  const cfAdd = btn({
+    style:{background:T.accent,color:"#fff",border:"none",borderRadius:"8px",padding:"9px 14px",fontSize:"13px",fontWeight:"600",cursor:"pointer"},
+    onClick:()=>{
+      if(!cf.n||!cf.c) return;
+      updateDay(activeDate,d2=>{ d2.foods.push({n:cf.n,c:parseInt(cf.c)||0,p:parseInt(cf.p)||0,v:false,cat:"custom"}); });
+    }
+  },"Add");
+
+  const customEntry = div({style:{display:"flex",gap:"6px",marginTop:"10px"}},cfName,cfCal,cfPro,cfAdd);
+
+  // Exercise
+  const exBtns = div({style:{display:"flex",flexWrap:"wrap",gap:"6px",marginTop:"8px"}},
+    ...EXERCISES.map(ex =>
+      btn({
+        class:"chip",
+        onClick:()=>updateDay(activeDate,d2=>{d2.exercises.push({...ex});})
+      }, ex.n+" (−"+ex.c+")")
+    )
+  );
+
+  return div({},
+    dateStrip,
+    div({class:"card"},
+      div({class:"card-title"},"Add Food"),
+      searchInput, filters, foodList, customEntry
+    ),
+    div({class:"card"},
+      div({class:"card-title"},"Add Exercise"),
+      exBtns
+    )
+  );
+}
+
+// ── SUGGEST VIEW ────────────────────────────────────────────────────────────
+
+let suggestMode = "meal";
+let mealType = "any";
+let mealVibe = "any";
+let mealIdx = 0;
+let shopPlanIdx = 0;
+
+// Minimal meal list (using full data injected below)
+const MEALS_MINI = [
+  // Vegan breakfasts
+  {title:"Overnight Oats",type:"breakfast",time:5,cal:320,p:11,vegan:true,tag:"🌱",
+   ingredients:["½ cup rolled oats","¾ cup oat milk","1 tbsp chia seeds","1 tsp maple syrup","berries"],
+   steps:["Mix oats, oat milk, chia, syrup in jar.","Refrigerate overnight.","Top with berries."],
+   note:"Make 3-4 jars Sunday — grab-and-go all week."},
+  {title:"Tofu Scramble",type:"breakfast",time:12,cal:270,p:18,vegan:true,tag:"🌱",
+   ingredients:["½ block firm tofu (crumbled)","1 tbsp nutritional yeast","½ tsp turmeric","½ bell pepper diced","handful spinach","olive oil","salt + pepper"],
+   steps:["Crumble tofu into hot oiled pan.","Add turmeric, nutritional yeast, pepper.","Cook 4 min.","Add spinach, wilt 1 min."],
+   note:"High protein vegan breakfast. Turmeric gives it an egg-like color."},
+  {title:"Hemp Seed Porridge",type:"breakfast",time:8,cal:350,p:18,vegan:true,tag:"🌱",
+   ingredients:["½ cup oats","1 cup oat milk","3 tbsp hemp seeds","1 tbsp maple syrup","berries"],
+   steps:["Cook oats in oat milk.","Stir in hemp seeds off heat.","Top with maple syrup and berries."],
+   note:"Hemp seeds dissolve right in. Easiest protein boost in existence."},
+  {title:"Banana Oat Smoothie",type:"breakfast",time:5,cal:290,p:9,vegan:true,tag:"🌱",
+   ingredients:["1 banana","1 cup oat milk","½ cup oats","1 tbsp peanut butter","ice"],
+   steps:["Add everything to blender.","Blend until smooth."],
+   note:"Add 3 tbsp hemp seeds for +10g protein."},
+  // Egg breakfasts
+  {title:"Greek Yogurt Bowl",type:"breakfast",time:3,cal:280,p:22,vegan:false,tag:"🥚",
+   ingredients:["1 cup full-fat Greek yogurt","½ cup berries","2 tbsp granola","1 tsp honey","1 tbsp hemp seeds"],
+   steps:["Spoon yogurt into bowl.","Top with berries, granola, honey, hemp seeds."],
+   note:"22g+ protein, zero cooking."},
+  {title:"Cottage Cheese + Fruit",type:"breakfast",time:3,cal:250,p:26,vegan:false,tag:"🥚",
+   ingredients:["1 cup cottage cheese","½ cup pineapple or peach","1 tsp honey","pinch cinnamon"],
+   steps:["Spoon into bowl.","Top with fruit, honey, cinnamon."],
+   note:"Highest protein breakfast in the app for the calorie count. 2 minutes."},
+  {title:"Smoked Salmon + Avocado Toast",type:"breakfast",time:8,cal:340,p:22,vegan:false,tag:"🐟",
+   ingredients:["2 slices whole grain bread","½ avocado","2 oz smoked salmon","capers","lemon","everything bagel seasoning"],
+   steps:["Toast bread.","Mash avocado with lemon.","Layer smoked salmon.","Capers, seasoning."],
+   note:"Fast, high protein, feels like a treat."},
+  {title:"Veggie Egg Scramble",type:"breakfast",time:12,cal:250,p:14,vegan:false,tag:"🥚",
+   ingredients:["2 eggs","handful spinach","cherry tomatoes","¼ bell pepper","olive oil","hot sauce"],
+   steps:["Sauté pepper 2 min, add tomatoes.","Add spinach, wilt 1 min.","Add beaten eggs, scramble.","Hot sauce."],
+   note:"IBS-friendly — skip cheese."},
+  // Vegan lunches
+  {title:"Chickpea Smash Bowl",type:"lunch",time:8,cal:370,p:14,vegan:true,tag:"🌱",
+   ingredients:["1 can chickpeas","½ cucumber diced","cherry tomatoes","olive oil","lemon","cumin","salt"],
+   steps:["Smash half the chickpeas.","Mix with veg, olive oil, lemon, cumin.","Season well."],
+   note:"Zero cooking. Works over greens or with pita."},
+  {title:"Tahini Grain Bowl",type:"lunch",time:10,cal:420,p:14,vegan:true,tag:"🌱",
+   ingredients:["1 cup batch grain","roasted veg","2 tbsp tahini","lemon","salt"],
+   steps:["Warm grain.","Layer veg.","Thin tahini with lemon, drizzle."],
+   note:"5 minutes if you batch cook Sunday."},
+  {title:"Lentil Soup",type:"lunch",time:30,cal:340,p:18,vegan:true,tag:"🌱",
+   ingredients:["1 cup red lentils","1 can diced tomatoes","1 onion","3 garlic cloves","1 tsp cumin","1 tsp turmeric","4 cups veggie broth","lemon"],
+   steps:["Sauté onion 4 min, garlic + spices 1 min.","Add lentils and broth.","Simmer 20 min.","Squeeze lemon."],
+   note:"Batch Sunday — covers lunch Mon-Wed."},
+  {title:"Tempeh + Quinoa Bowl",type:"lunch",time:15,cal:450,p:26,vegan:true,tag:"🌱",
+   ingredients:["4 oz tempeh crumbled","1 cup cooked quinoa","2 cups arugula","cherry tomatoes","2 tbsp olive oil","lemon","salt"],
+   steps:["Pan-fry tempeh in oil 5 min until golden.","Bowl: quinoa, arugula, tomatoes.","Top with tempeh.","Lemon, salt."],
+   note:"Highest-protein vegan lunch. Tempeh + quinoa = complete protein."},
+  // Fish lunches
+  {title:"Tuna Avocado Bowl",type:"lunch",time:8,cal:310,p:30,vegan:false,tag:"🐟",
+   ingredients:["1 can tuna","½ avocado","½ cucumber sliced","soy sauce","rice optional"],
+   steps:["Slice avocado and cucumber.","Add tuna.","Drizzle soy sauce."],
+   note:"Fast, high protein, no cooking."},
+  {title:"Tuna + White Bean Salad",type:"lunch",time:8,cal:330,p:36,vegan:false,tag:"🐟",
+   ingredients:["1 can tuna","1 can white beans","1 celery stalk diced","red onion","2 tbsp olive oil","lemon","salt + pepper"],
+   steps:["Mix tuna, beans, celery, onion.","Dress with olive oil and lemon.","Season."],
+   note:"High protein, no cooking, keeps 2 days."},
+  {title:"Smoked Salmon Grain Bowl",type:"lunch",time:8,cal:380,p:26,vegan:false,tag:"🐟",
+   ingredients:["3 oz smoked salmon","1 cup cooked farro or quinoa","½ avocado","cucumber","capers","lemon","dill"],
+   steps:["Build bowl: grain, cucumber, avocado.","Lay salmon on top.","Capers, lemon, dill."],
+   note:"No cooking if grain is batch-prepped. Feels restaurant-quality."},
+  {title:"Sardines on Toast",type:"lunch",time:6,cal:280,p:24,vegan:false,tag:"🐟",
+   ingredients:["1 can sardines","2 slices whole grain bread","1 tsp dijon","handful arugula","lemon"],
+   steps:["Toast bread.","Spread mustard.","Layer arugula then sardines.","Lemon."],
+   note:"High omega-3, very filling, incredibly fast."},
+  // Egg lunches
+  {title:"Egg Salad Bowl",type:"lunch",time:8,cal:290,p:20,vegan:false,tag:"🥚",
+   ingredients:["3 hard-boiled eggs","1 tbsp Greek yogurt","dijon mustard","celery diced","mixed greens","salt + pepper"],
+   steps:["Chop eggs.","Mix with yogurt, mustard, celery.","Serve over greens."],
+   note:"Works great with batch-cooked Sunday eggs."},
+  // Meat lunches
+  {title:"Chicken + Grain Bowl",type:"lunch",time:10,cal:430,p:44,vegan:false,tag:"🥩",
+   ingredients:["5 oz rotisserie chicken","1 cup cooked quinoa or rice","2 cups arugula","cherry tomatoes","lemon","olive oil"],
+   steps:["Slice chicken.","Bowl: grain, arugula, tomatoes.","Top with chicken.","Lemon, olive oil."],
+   note:"Use rotisserie chicken — highest-protein lunch, zero cooking."},
+  // Vegan dinners
+  {title:"Black Bean Tacos",type:"dinner",time:15,cal:390,p:16,vegan:true,tag:"🌱",
+   ingredients:["1 can black beans","4 corn tortillas","½ avocado","salsa","cabbage","lime","cumin + garlic powder"],
+   steps:["Heat beans with spices, mash slightly.","Warm tortillas.","Fill with beans, cabbage, avocado, salsa.","Lime."],
+   note:"Family-friendly and fast. Kids can build their own."},
+  {title:"Chickpea Curry",type:"dinner",time:25,cal:450,p:16,vegan:true,tag:"🌱",
+   ingredients:["1 can chickpeas","1 can diced tomatoes","½ cup coconut milk","1 onion","3 garlic cloves","curry powder","spinach","½ cup rice"],
+   steps:["Sauté onion 4 min, garlic 1 min.","Add curry 30 sec.","Add chickpeas, tomatoes, coconut milk — simmer 12 min.","Stir in spinach.","Serve over rice."],
+   note:"Double the batch. Gets better the next day."},
+  {title:"Tempeh + Broccoli Bowl",type:"dinner",time:20,cal:410,p:24,vegan:true,tag:"🌱",
+   ingredients:["8 oz tempeh sliced","2 cups broccoli","soy sauce","maple syrup","sesame oil","sriracha","rice"],
+   steps:["Mix soy, maple, sesame, sriracha.","Pan-fry tempeh 3 min/side.","Sauté broccoli 5 min.","Toss in sauce.","Serve over rice."],
+   note:"The sauce makes it. One of the best vegan dinners."},
+  {title:"Red Lentil Dal",type:"dinner",time:30,cal:400,p:18,vegan:true,tag:"🌱",
+   ingredients:["1 cup red lentils","1 can diced tomatoes","1 onion","3 garlic cloves","1 tbsp ginger","1 tsp cumin","1 tsp turmeric","1 tsp garam masala","veggie broth","rice"],
+   steps:["Sauté onion 5 min, garlic + ginger 2 min.","Add spices 30 sec.","Add lentils + broth, simmer 20 min.","Serve over rice."],
+   note:"One of the best cheap healthy vegan meals. Kids often like it."},
+  {title:"Lentil Bolognese",type:"dinner",time:30,cal:460,p:20,vegan:true,tag:"🌱",
+   ingredients:["1 cup cooked lentils","1 can crushed tomatoes","1 onion","3 garlic cloves","1 carrot","Italian seasoning","olive oil","whole grain pasta"],
+   steps:["Sauté onion + carrot 5 min, garlic 1 min.","Add tomatoes + lentils + seasoning — simmer 15 min.","Serve over pasta."],
+   note:"Tastes remarkably like meat bolognese."},
+  // Fish dinners
+  {title:"Sheet Pan Salmon",type:"dinner",time:22,cal:430,p:44,vegan:false,tag:"🐟",
+   ingredients:["6 oz salmon","2 cups broccoli","cherry tomatoes","olive oil","3 garlic cloves","lemon","salt"],
+   steps:["400°F. Toss veg in oil on sheet pan.","Nestle salmon, season with garlic, lemon.","Roast 15-18 min."],
+   note:"One pan, minimal cleanup."},
+  {title:"Shrimp Tacos",type:"dinner",time:18,cal:380,p:34,vegan:false,tag:"🐟",
+   ingredients:["6 oz shrimp","4 corn tortillas","cabbage","½ avocado","lime","hot sauce","chili powder"],
+   steps:["Season shrimp, cook 2 min/side.","Warm tortillas.","Fill with cabbage, shrimp, avocado.","Lime, hot sauce."],
+   note:"Family-friendly."},
+  {title:"Tuna Pasta",type:"dinner",time:18,cal:440,p:44,vegan:false,tag:"🐟",
+   ingredients:["3 oz whole grain pasta","1 can tuna","cherry tomatoes","3 garlic cloves","olive oil","red pepper flakes","spinach","lemon"],
+   steps:["Cook pasta, reserve water.","Sauté garlic + red pepper.","Add tomatoes 2 min.","Add pasta, tuna, spinach.","Toss with pasta water and lemon."],
+   note:"Pantry staple dinner."},
+  {title:"Miso-Glazed Cod",type:"dinner",time:20,cal:320,p:34,vegan:false,tag:"🐟",
+   ingredients:["6 oz cod","2 tbsp miso paste","1 tbsp mirin","1 tsp honey","1 tsp sesame oil","steamed veg"],
+   steps:["Mix glaze. Brush on cod.","Bake 400°F for 12-15 min.","Serve with steamed veg."],
+   note:"Cod is budget-friendly and mild."},
+  // Egg dinners
+  {title:"Shakshuka",type:"dinner",time:20,cal:350,p:18,vegan:false,tag:"🥚",
+   ingredients:["3 eggs","1 can crushed tomatoes","½ onion","3 garlic cloves","1 tsp cumin","1 tsp paprika","olive oil","bread"],
+   steps:["Sauté onion + garlic.","Add spices + tomatoes — simmer 8 min.","Make 3 wells, crack eggs in.","Cover, cook 5 min.","Serve with bread."],
+   note:"One of the best weeknight dinners."},
+  // Meat dinners
+  {title:"Grilled Chicken + Veg",type:"dinner",time:20,cal:350,p:44,vegan:false,tag:"🥩",
+   ingredients:["6 oz chicken breast","2 cups mixed veg","olive oil","lemon","garlic","Italian herbs","salt"],
+   steps:["Season chicken, grill or pan-sear 5-6 min/side.","Toss veg in oil, roast or sauté.","Serve with lemon."],
+   note:"Highest-protein dinner option."},
+  {title:"Ground Turkey Taco Bowl",type:"dinner",time:20,cal:420,p:38,vegan:false,tag:"🥩",
+   ingredients:["5 oz ground turkey","1 cup cooked rice","½ can black beans","½ avocado","salsa","cumin + chili powder","hot sauce"],
+   steps:["Brown turkey with spices.","Bowl: rice, beans, turkey, avocado.","Salsa + hot sauce."],
+   note:"Family meal — everyone builds their own."},
+  // Snacks
+  {title:"Edamame",type:"snack",time:5,cal:190,p:18,vegan:true,tag:"🌱",
+   ingredients:["1 cup frozen edamame in shell","sea salt"],
+   steps:["Microwave 3-4 min.","Salt and eat."],
+   note:"Best high-protein vegan snack. Keep a bag in the freezer."},
+  {title:"Hard Boiled Eggs",type:"snack",time:2,cal:140,p:12,vegan:false,tag:"🥚",
+   ingredients:["2 hard-boiled eggs (batch prepped)","salt + hot sauce"],
+   steps:["Peel.","Eat."],
+   note:"Make 6 Sunday. 5 days of fast snacks."},
+  {title:"Cottage Cheese + Fruit",type:"snack",time:2,cal:180,p:16,vegan:false,tag:"🥚",
+   ingredients:["½ cup cottage cheese","½ cup pineapple chunks","1 tsp honey","pinch cinnamon"],
+   steps:["Mix together."],
+   note:"12-16g protein, low cal."},
+  {title:"Smoked Salmon + Cucumber",type:"snack",time:3,cal:130,p:16,vegan:false,tag:"🐟",
+   ingredients:["2 oz smoked salmon","1 cucumber (sliced rounds)","capers optional"],
+   steps:["Top cucumber rounds with smoked salmon.","Capers on top."],
+   note:"Elegant, low cal, high protein."},
+  {title:"Apple + Peanut Butter",type:"snack",time:2,cal:285,p:7,vegan:true,tag:"🌱",
+   ingredients:["1 apple","2 tbsp peanut butter"],
+   steps:["Slice apple.","Dip."],
+   note:"Classic."},
+  {title:"Hummus + Veg",type:"snack",time:3,cal:150,p:5,vegan:true,tag:"🌱",
+   ingredients:["¼ cup hummus","cucumber, carrots, or bell pepper"],
+   steps:["Slice veg.","Dip."],
+   note:"Low calorie, high volume."},
+];
+
+// Shopping plans
+const SHOP_PLANS = [
+  { title:"Batch Week: Vegan Protein Focus", note:"Sunday batch cook covers ~70% of your meals.",
+    items:[
+      {header:true,text:"PROTEINS"},{text:"Firm tofu (2 blocks)"},{text:"Tempeh (2 blocks)"},{text:"Red lentils (2 lbs)"},{text:"Chickpeas (4 cans)"},{text:"Black beans (2 cans)"},{text:"Edamame frozen (2 bags)"},
+      {header:true,text:"GRAINS + PANTRY"},{text:"Quinoa (2 cups dry)"},{text:"Brown rice (2 cups dry)"},{text:"Hemp seeds"},{text:"Nutritional yeast"},{text:"Oat milk (2 cartons)"},{text:"Soy sauce + sesame oil + tahini"},
+      {header:true,text:"PRODUCE"},{text:"Spinach/kale (large bag)"},{text:"Broccoli"},{text:"Bell peppers (3-4)"},{text:"Cherry tomatoes"},{text:"Avocados (4)"},{text:"Sweet potatoes (3)"},
+    ],
+    prep:[
+      "Cook: 2 cups quinoa + 2 cups brown rice (20 min hands-off)",
+      "Simmer: Big pot red lentil dal — covers lunch 3 days",
+      "Roast: Sheet pan veg (broccoli, peppers, zucchini) 425°F 22 min",
+      "Press + cube tofu for stir fry Mon/Tue",
+      "Prep: 3 overnight oat jars + 3 smoothie packs",
+    ]
+  },
+  { title:"Batch Week: Pescatarian Protein Push", note:"Pre-cook both salmon fillets Sunday — Mon + Tue dinner is just reheat + assemble.",
+    items:[
+      {header:true,text:"PROTEINS"},{text:"Salmon fillets (2)"},{text:"Shrimp frozen (1 lb)"},{text:"Canned tuna (4 cans)"},{text:"Canned salmon (2 cans)"},{text:"Smoked salmon (4 oz)"},{text:"Eggs (1 dozen)"},{text:"Greek yogurt (32 oz)"},{text:"Cottage cheese (16 oz)"},
+      {header:true,text:"GRAINS"},{text:"Quinoa (2 cups dry)"},{text:"Brown rice (2 cups dry)"},{text:"Soba noodles"},
+      {header:true,text:"PRODUCE"},{text:"Avocados (4)"},{text:"Spinach (large bag)"},{text:"Broccoli"},{text:"Bok choy"},{text:"Cherry tomatoes"},{text:"Cucumber (2)"},{text:"Arugula"},{text:"Lemon (4)"},
+    ],
+    prep:[
+      "Cook: quinoa + rice",
+      "Hard-boil 6 eggs",
+      "Bake both salmon fillets (refrigerate for Mon + Tue)",
+      "Portion Greek yogurt + hemp seeds into 4 snack containers",
+      "Prep 3 overnight oat jars",
+    ]
+  },
+  { title:"Batch Week: High-Protein Mixed (150g/day)", note:"The kitchen sink plan. Tracks protein math by meal.",
+    items:[
+      {header:true,text:"PROTEINS"},{text:"Chicken breast (1 lb)"},{text:"Salmon fillets (2)"},{text:"Shrimp frozen (1 lb)"},{text:"Canned tuna (4 cans)"},{text:"Eggs (1 dozen)"},{text:"Cottage cheese (16 oz)"},{text:"Greek yogurt (32 oz)"},{text:"Firm tofu (1 block)"},{text:"Tempeh (1 block)"},{text:"Chickpeas (2 cans)"},{text:"Edamame frozen (2 bags)"},{text:"Hemp seeds"},
+      {header:true,text:"GRAINS + PRODUCE"},{text:"Quinoa + Brown rice"},{text:"Avocados (3)"},{text:"Spinach/arugula"},{text:"Broccoli + cherry tomatoes"},{text:"Cucumber + bell peppers"},{text:"Sweet potato (2)"},{text:"Lemon (4)"},
+    ],
+    prep:[
+      "Protein target: 150g/day — plan each meal zone",
+      "Breakfast: 20-25g (Greek yogurt + hemp = 28g)",
+      "Lunch: 35-40g (chicken bowl = 44g, tuna salad = 36g)",
+      "Dinner: 40-45g (salmon + quinoa = 50g, shrimp = 34g)",
+      "Snacks: 15-20g (eggs + cottage cheese = 25g)",
+      "Cook: quinoa + rice Sunday",
+      "Grill 1 lb chicken — covers 3 lunches",
+      "Hard-boil 8 eggs",
+    ]
+  },
+  { title:"Batch Week: Quick Wins (20 min max)", note:"For weeks when time is tight. Zero shame, maximum convenience.",
+    items:[
+      {header:true,text:"ALL FAST-PREP"},{text:"Canned tuna (6 cans)"},{text:"Canned salmon (2 cans)"},{text:"Canned sardines (2 cans)"},{text:"Smoked salmon (4 oz)"},{text:"Pre-cooked shrimp frozen (1 lb)"},{text:"Rotisserie chicken (1)"},{text:"Eggs (1 dozen)"},{text:"Greek yogurt (32 oz)"},{text:"Cottage cheese (16 oz)"},
+      {header:true,text:"ZERO-COOK VEGAN"},{text:"Chickpeas (4 cans)"},{text:"White beans (2 cans)"},{text:"Edamame frozen (2 bags)"},{text:"Avocados (4)"},{text:"Baby spinach (bag)"},
+      {header:true,text:"GRAB-AND-GO"},{text:"Rice cakes"},{text:"Whole grain bread"},{text:"Corn tortillas"},{text:"Hummus (pre-made)"},{text:"Salsa"},
+    ],
+    prep:[
+      "Sunday prep: 20 minutes ONLY",
+      "Hard-boil 8 eggs",
+      "Portion Greek yogurt + cottage cheese snacks",
+      "Make 3 overnight oat jars",
+      "That's it. No batch cooking this week.",
+    ]
+  },
+  { title:"Batch Week: IBS-Safe + Gentle", note:"Flare week protocol. Low-FODMAP focus, gentle proteins, safe veg list.",
+    items:[
+      {header:true,text:"LOW-FODMAP PROTEINS"},{text:"Salmon fillets (2)"},{text:"Shrimp frozen (1 lb)"},{text:"Canned tuna (3 cans)"},{text:"Eggs (1 dozen)"},{text:"Firm tofu (2 blocks)"},{text:"Chickpeas (2 cans, RINSE WELL)"},{text:"Greek yogurt (32 oz)"},
+      {header:true,text:"SAFE GRAINS"},{text:"White or brown rice (2 cups dry)"},{text:"Oats rolled (large)"},{text:"Rice noodles"},
+      {header:true,text:"LOW-FODMAP VEG"},{text:"Spinach + bok choy"},{text:"Zucchini (3) + carrots"},{text:"Cherry tomatoes + cucumber"},{text:"Bell peppers (3)"},{text:"Green beans"},
+      {header:true,text:"AVOID THIS WEEK"},{text:"Onion + garlic (use garlic-infused oil)"},{text:"Cauliflower + apples"},{text:"Kidney beans + wheat"},
+    ],
+    prep:[
+      "Rinse ALL canned legumes thoroughly",
+      "Use garlic-infused oil instead of garlic cloves",
+      "Cook: 2 cups rice",
+      "Bake both salmon fillets",
+      "Hard-boil 6 eggs",
+      "Roast: zucchini, carrots, bell pepper (safe veg, 22 min)",
+    ]
+  },
+  { title:"Batch Week: Family Meals", note:"One dinner that works for everyone. Your protein boost added separately.",
+    items:[
+      {header:true,text:"FAMILY-FRIENDLY PROTEINS"},{text:"Ground turkey (1 lb)"},{text:"Chicken breast (1 lb)"},{text:"Shrimp frozen (1 lb)"},{text:"Eggs (1.5 dozen)"},{text:"Chickpeas (3 cans)"},{text:"Black beans (2 cans)"},
+      {header:true,text:"CROWD-PLEASING STAPLES"},{text:"Corn tortillas (big pack)"},{text:"Brown rice (3 cups dry)"},{text:"Pasta (whole grain)"},{text:"Sweet potatoes (4)"},{text:"Avocados (5)"},
+      {header:true,text:"PRODUCE + SAUCES"},{text:"Spinach + bell peppers (4)"},{text:"Cherry tomatoes + broccoli"},{text:"Shredded cabbage + limes"},{text:"Salsa (large jar) + hot sauce"},{text:"Cumin + chili powder + curry powder"},
+    ],
+    prep:[
+      "Cook: 3 cups brown rice (covers whole week)",
+      "Brown 1 lb ground turkey with cumin/chili — taco filling for 2 nights",
+      "Bake 4 sweet potatoes",
+      "Hard-boil 8 eggs",
+      "Roast 2 sheet pans mixed veg",
+      "Strategy: cook one thing everyone eats, add your protein boost separately",
+    ]
+  },
+];
+
+function renderSuggest() {
+  const modeBar = div({style:{display:"flex",marginBottom:"14px",border:`1px solid ${T.border}`,borderRadius:"10px",overflow:"hidden"}},
+    ...["meal","shop","plan"].map((m,i) =>
+      btn({
+        style:{flex:"1",padding:"11px 4px",border:"none",
+          background:suggestMode===m?T.green:"transparent",
+          color:suggestMode===m?"#FEFCF7":T.textMid,
+          fontWeight:suggestMode===m?"600":"400",fontSize:"13px"},
+        onClick:()=>{ suggestMode=m; renderContent(); }
+      }, ["🥗 Meals","🛒 Shopping","📚 Plan"][i])
+    )
+  );
+
+  if (suggestMode === "meal") {
+    const filtered = MEALS_MINI.filter(m => {
+      if (mealType !== "any" && m.type !== mealType) return false;
+      if (mealVibe === "vegan" && !m.vegan) return false;
+      if (mealVibe === "fish" && m.tag !== "🐟") return false;
+      if (mealVibe === "egg" && m.tag !== "🥚") return false;
+      if (mealVibe === "meat" && m.tag !== "🥩") return false;
+      return true;
+    });
+    const meal = filtered[mealIdx % Math.max(1, filtered.length)];
+
+    const filters = div({class:"card"},
+      div({class:"card-title"},"Meal Ideas"),
+      div({style:{display:"flex",gap:"8px",marginBottom:"10px",flexWrap:"wrap"}},
+        ...["any","breakfast","lunch","dinner","snack"].map(t =>
+          btn({class:"chip"+(mealType===t?" active":""),
+            onClick:()=>{mealType=t;mealIdx=0;renderContent();}
+          }, t==="any"?"Any type":t.charAt(0).toUpperCase()+t.slice(1))
+        )
+      ),
+      el("label",{class:"label"},"Protein source"),
+      el("select",{
+        style:{width:"100%",padding:"9px 12px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"14px",background:T.card,color:T.text,outline:"none",marginBottom:"10px"},
+        onchange: e => { mealVibe=e.target.value; mealIdx=0; renderContent(); }
+      },
+        ...["any","vegan","fish","egg","meat"].map(v =>
+          el("option",{value:v,selected:mealVibe===v?true:null},
+            {any:"Any",vegan:"🌱 Vegan only",fish:"🐟 Fish/seafood",egg:"🥚 Eggs/dairy",meat:"🥩 Chicken/turkey/meat"}[v])
+        )
+      ),
+      div({style:{display:"flex",gap:"8px"}},
+        btn({class:"btn",style:{flex:"1"},
+          onClick:()=>{ mealIdx=(mealIdx+1)%Math.max(1,filtered.length); renderContent(); }
+        },"Next suggestion →"),
+      ),
+      div({style:{fontSize:"11px",color:T.muted,marginTop:"8px",textAlign:"center"}},
+        `${filtered.length} meals match`)
+    );
+
+    let mealCard = null;
+    if (meal) {
+      mealCard = div({class:"card",style:{borderLeft:`4px solid ${T.accent}`}},
+        div({style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"4px"}},
+          div({style:{fontFamily:"'Playfair Display',serif",fontSize:"18px",fontWeight:"700"}},meal.tag+" "+meal.title),
+          div({style:{textAlign:"right",flexShrink:"0",marginLeft:"12px"}},
+            div({style:{fontFamily:"'Playfair Display',serif",fontSize:"18px",fontWeight:"700",color:T.accent}},
+              meal.cal,span({style:{fontSize:"11px",fontWeight:"400",color:T.muted}}," cal")),
+            div({style:{fontSize:"12px",color:T.good,fontWeight:"600"}},meal.p+"g protein")
+          )
+        ),
+        div({style:{fontSize:"12px",color:T.muted,marginBottom:"14px"}},meal.time+" min · "+meal.note),
+        div({style:{marginBottom:"14px"}},
+          div({style:{fontSize:"11px",fontWeight:"700",letterSpacing:"0.8px",textTransform:"uppercase",color:T.accent,marginBottom:"8px"}},"Ingredients"),
+          div({style:{display:"flex",flexWrap:"wrap",gap:"6px"}},
+            ...meal.ingredients.map(ing => span({class:"tag"},ing))
+          )
+        ),
+        div({},
+          div({style:{fontSize:"11px",fontWeight:"700",letterSpacing:"0.8px",textTransform:"uppercase",color:T.accent,marginBottom:"8px"}},"Steps"),
+          ...meal.steps.map((s,i) =>
+            div({style:{display:"flex",gap:"10px",marginBottom:"7px",alignItems:"flex-start"}},
+              div({class:"step-num"},i+1),
+              span({style:{fontSize:"13px",lineHeight:"20px"}},s)
+            )
+          )
+        )
+      );
+    }
+
+    return div({}, modeBar, filters, mealCard||"");
+  }
+
+  if (suggestMode === "shop") {
+    const plan = SHOP_PLANS[shopPlanIdx] || SHOP_PLANS[0];
+    const shopCard = div({class:"card"},
+      div({class:"card-title"},"Weekly Shopping Plan"),
+      el("label",{class:"label"},"Choose your plan"),
+      el("select",{
+        style:{width:"100%",padding:"9px 12px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"14px",background:T.card,color:T.text,outline:"none",marginBottom:"8px"},
+        onchange: e => { shopPlanIdx=parseInt(e.target.value)||0; renderContent(); }
+      },
+        ...SHOP_PLANS.map((p,i) =>
+          el("option",{value:i,selected:shopPlanIdx===i?true:null},p.title)
+        )
+      ),
+      div({style:{fontSize:"12px",color:T.muted,marginBottom:"14px"}},plan.note)
+    );
+
+    const planCard = div({class:"card",style:{borderLeft:`4px solid ${T.accent}`}},
+      div({style:{fontFamily:"'Playfair Display',serif",fontSize:"18px",fontWeight:"700",marginBottom:"14px"}},plan.title),
+      div({style:{marginBottom:"14px"}},
+        div({style:{fontSize:"11px",fontWeight:"700",letterSpacing:"0.8px",textTransform:"uppercase",color:T.accent,marginBottom:"8px"}},"Shopping List"),
+        div({style:{display:"flex",flexWrap:"wrap",gap:"6px",alignItems:"center"}},
+          ...plan.items.map(item =>
+            item.header
+              ? div({class:"section-header"},item.text)
+              : span({class:"tag"},item.text)
+          )
+        )
+      ),
+      div({},
+        div({style:{fontSize:"11px",fontWeight:"700",letterSpacing:"0.8px",textTransform:"uppercase",color:T.accent,marginBottom:"8px"}},"Sunday Prep"),
+        ...plan.prep.map(s =>
+          div({style:{display:"flex",gap:"8px",marginBottom:"6px",alignItems:"flex-start"}},
+            span({style:{color:T.accent,fontWeight:"700",flexShrink:"0"}},"·"),
+            span({style:{fontSize:"13px",lineHeight:"20px"}},s)
+          )
+        )
+      )
+    );
+
+    return div({}, modeBar, shopCard, planCard);
+  }
+
+  // Plan mode — show plan cards list
+  const planList = div({class:"card"},
+    div({class:"card-title"},"10 Principles"),
+    ...PLAN_CARDS.map((c,i) =>
+      div({style:{padding:"10px 0",borderBottom:i<PLAN_CARDS.length-1?`1px solid ${T.border}`:"none",cursor:"pointer"},
+        onClick:()=>{ activeTab="plan"; window._planIdx=i; render(); }},
+        div({style:{display:"flex",alignItems:"center",gap:"12px"}},
+          div({style:{fontFamily:"'Playfair Display',serif",fontSize:"13px",fontWeight:"700",color:T.border,width:"28px",flexShrink:"0"}},c.num),
+          div({},
+            div({style:{fontSize:"13px",fontWeight:"600"}},""+c.title),
+            div({style:{fontSize:"11px",color:T.muted}},c.category)
+          )
+        )
+      )
+    )
+  );
+  return div({}, modeBar, planList);
+}
+
+// ── PROGRESS VIEW ────────────────────────────────────────────────────────────
+
+function renderProgress() {
+  const entries = Object.entries(state.days)
+    .filter(([,d]) => d.weight)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .slice(-30);
+
+  // Simple SVG chart
+  let chartEl;
+  if (entries.length < 2) {
+    chartEl = div({class:"card"},
+      div({class:"card-title"},"Weight Progress"),
+      div({style:{textAlign:"center",color:T.muted,fontSize:"13px",padding:"20px 0"}},"Log weight for at least 2 days to see your chart.")
+    );
+  } else {
+    const vals = entries.map(([,d]) => d.weight);
+    const minW = Math.min(...vals) - 2;
+    const maxW = Math.max(...vals) + 2;
+    const W = 320, H = 140, pad = 10;
+    const gw = s => state.settings.goalWeight;
+
+    const pts = entries.map(([,d],i) => {
+      const x = pad + (i / (entries.length-1)) * (W - pad*2);
+      const y = H - pad - ((d.weight - minW) / (maxW - minW)) * (H - pad*2);
+      return [x,y,d.weight];
+    });
+
+    const pathD = pts.map(([x,y],i) => (i===0?"M":"L")+x.toFixed(1)+","+y.toFixed(1)).join(" ");
+    const goalY = H - pad - ((gw() - minW) / (maxW - minW)) * (H - pad*2);
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    svg.setAttribute("style","width:100%;height:auto");
+
+    const addEl = (tag, attrs) => {
+      const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+      svg.appendChild(e); return e;
+    };
+    addEl("line",{x1:pad,y1:goalY.toFixed(1),x2:W-pad,y2:goalY.toFixed(1),stroke:T.accent,strokeWidth:"1","stroke-dasharray":"4,4",opacity:"0.6"});
+    addEl("path",{d:pathD,fill:"none",stroke:T.green,strokeWidth:"2.5","stroke-linecap":"round","stroke-linejoin":"round"});
+    pts.forEach(([x,y,w]) => {
+      const c = addEl("circle",{cx:x.toFixed(1),cy:y.toFixed(1),r:"4",fill:T.green,stroke:"#FEFCF7","stroke-width":"2"});
+    });
+
+    chartEl = div({class:"card"},
+      div({class:"card-title"},"Weight Progress (30 days)"),
+      div({style:{overflowX:"auto"}},svg),
+      div({style:{fontSize:"11px",color:T.muted,textAlign:"right",marginTop:"4px"}},
+        "Goal: "+state.settings.goalWeight+" lbs")
+    );
+  }
+
+  // Recent log
+  const recent = Object.entries(state.days)
+    .sort(([a],[b]) => b.localeCompare(a))
+    .slice(0,14);
+
+  const logRows = recent.map(([date,d]) => {
+    const cons = d.foods.reduce((s,f)=>s+f.c,0);
+    const burn = d.exercises.reduce((s,e)=>s+e.c,0);
+    const net = cons - burn;
+    const tgt = calTarget(d.drankLastNight);
+    return div({style:{display:"flex",justifyContent:"space-between",alignItems:"center",
+      padding:"8px 0",borderBottom:`1px solid ${T.border}`}},
+      div({},
+        div({style:{fontSize:"13px",fontWeight:"500"}},new Date(date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})),
+        d.weight?div({style:{fontSize:"11px",color:T.muted}},d.weight+" lbs"):null
+      ),
+      div({style:{textAlign:"right"}},
+        cons>0?div({style:{fontSize:"13px",fontWeight:"600",color:net>tgt?T.danger:T.good}},net+" net cal"):
+          div({style:{fontSize:"12px",color:T.muted}},"—"),
+        cons>0?div({style:{fontSize:"11px",color:T.muted}},cons+" eaten"):null
+      )
+    );
+  });
+
+  const histCard = div({class:"card"},
+    div({class:"card-title"},"Recent History"),
+    recent.length ? div({},...logRows) : div({style:{color:T.muted,fontSize:"13px",padding:"8px 0"}},"No data yet.")
+  );
+
+  return div({}, chartEl, histCard);
+}
+
+// ── PLAN VIEW ────────────────────────────────────────────────────────────────
+
+let planIdx = 0;
+let planTouchStartX = null;
+
+function renderPlan() {
+  if (window._planIdx != null) { planIdx = window._planIdx; window._planIdx = null; }
+
+  const card = PLAN_CARDS[planIdx];
+
+  const indicator = div({style:{display:"flex",justifyContent:"center",gap:"6px",marginBottom:"14px"}},
+    ...PLAN_CARDS.map((_,i) =>
+      div({style:{width:i===planIdx?"20px":"8px",height:"8px",borderRadius:"4px",
+        background:i===planIdx?T.green:T.border,transition:"all 0.2s",cursor:"pointer"},
+        onClick:()=>{ planIdx=i; renderContent(); }
+      })
+    )
+  );
+
+  const cardEl = div({class:"card plan-card",
+    style:{minHeight:"220px",userSelect:"none"},
+    onTouchStart: e => { planTouchStartX = e.touches[0].clientX; },
+    onTouchEnd: e => {
+      if (planTouchStartX == null) return;
+      const dx = e.changedTouches[0].clientX - planTouchStartX;
+      planTouchStartX = null;
+      if (dx < -40 && planIdx < PLAN_CARDS.length-1) { planIdx++; renderContent(); }
+      else if (dx > 40 && planIdx > 0) { planIdx--; renderContent(); }
+    }
+  },
+    div({style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"12px"}},
+      div({style:{fontFamily:"'Playfair Display',serif",fontSize:"26px",fontWeight:"700",color:T.border,lineHeight:"1"}},card.num),
+      div({style:{fontSize:"11px",fontWeight:"600",letterSpacing:"0.8px",textTransform:"uppercase",color:T.accent}},card.category)
+    ),
+    div({style:{fontFamily:"'Playfair Display',serif",fontSize:"19px",fontWeight:"700",marginBottom:"12px",lineHeight:"1.3"}},card.title),
+    div({style:{fontSize:"14px",lineHeight:"1.7",color:T.textMid}},card.body)
+  );
+
+  const navBtns = div({style:{display:"flex",gap:"8px",marginBottom:"16px"}},
+    btn({class:"btn btn-ghost",style:{flex:"1"},
+      onClick:()=>{ if(planIdx>0){planIdx--;renderContent();} }
+    },"← Prev"),
+    btn({class:"btn",style:{flex:"1"},
+      onClick:()=>{ if(planIdx<PLAN_CARDS.length-1){planIdx++;renderContent();} }
+    },"Next →")
+  );
+
+  const allCards = div({class:"card"},
+    div({class:"card-title"},"All Principles"),
+    ...PLAN_CARDS.map((c,i) =>
+      div({style:{display:"flex",alignItems:"center",gap:"12px",padding:"9px 0",
+        borderBottom:i<PLAN_CARDS.length-1?`1px solid ${T.border}`:"none",cursor:"pointer"},
+        onClick:()=>{ planIdx=i; renderContent(); }},
+        div({style:{fontFamily:"'Playfair Display',serif",fontSize:"14px",fontWeight:"700",color:T.border,width:"28px",flexShrink:"0"}},c.num),
+        div({style:{flex:"1"}},
+          div({style:{fontSize:"13px",fontWeight:"600",color:i===planIdx?T.green:T.text}},c.title),
+          div({style:{fontSize:"11px",color:T.muted}},c.category)
+        ),
+        i===planIdx?div({style:{fontSize:"11px",color:T.green,fontWeight:"600"}},"reading"):null
+      )
+    )
+  );
+
+  return div({}, indicator, cardEl, navBtns, allCards);
+}
+
+// ── SETTINGS (in today) ─────────────────────────────────────────────────────
+
+function renderSettings() {
+  const s = state.settings;
+  const mkInp = (label, key, placeholder) => {
+    const input = inp({type:"number",value:s[key]||"",placeholder,
+      style:{width:"100%",padding:"9px 12px",border:`1px solid ${T.border}`,borderRadius:"8px",fontSize:"14px",background:T.card,color:T.text,outline:"none"},
+      onInput: e => updateSettings(st => { st[key] = parseFloat(e.target.value)||null; })
+    });
+    return div({style:{marginBottom:"12px"}},el("label",{class:"label"},label),input);
+  };
+  return div({class:"card"},
+    div({class:"card-title"},"Settings"),
+    mkInp("Starting Weight (lbs)","startWeight","250"),
+    mkInp("Goal Weight (lbs)","goalWeight","185"),
+    mkInp("Month Goal (lbs)","monthGoalWeight","240")
+  );
+}
+
+// ── RENDER ENGINE ───────────────────────────────────────────────────────────
+
+function updateHeader() {
+  const day = getDay(activeDate);
+  const consumed = day.foods.reduce((s,f)=>s+f.c,0);
+  const burned = day.exercises.reduce((s,e)=>s+e.c,0);
+  const net = consumed - burned;
+  const target = calTarget(day.drankLastNight);
+  const netEl = document.getElementById("hdr-net");
+  const tgtEl = document.getElementById("hdr-target");
+  if (netEl) {
+    netEl.textContent = net > 0 ? net : "—";
+    netEl.style.color = net > target ? "#F5A87A" : net > 0 ? "#A8DDB5" : "rgba(254,252,247,0.4)";
+  }
+  if (tgtEl) tgtEl.textContent = "NET CAL / " + target;
+}
+
+function renderContent() {
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+
+  let view;
+  if (activeTab === "today") view = div({},renderToday(), renderSettings());
+  else if (activeTab === "log") view = renderLog();
+  else if (activeTab === "suggest") view = renderSuggest();
+  else if (activeTab === "progress") view = renderProgress();
+  else if (activeTab === "plan") view = renderPlan();
+
+  if (view) content.appendChild(view);
+  updateHeader();
+}
+
+function render() {
+  // Nav
+  const nav = document.getElementById("nav");
+  nav.innerHTML = "";
+  TABS.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "nav-btn" + (activeTab === t.id ? " active" : "");
+    b.textContent = t.label;
+    b.addEventListener("click", () => { activeTab = t.id; render(); });
+    nav.appendChild(b);
+  });
+
+  renderContent();
+}
+
+// Boot
+render();
+</script>
+</body>
+</html>
